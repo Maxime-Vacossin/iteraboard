@@ -4,7 +4,7 @@
         "binary_operator_spaces": {
             "default": "single_space"
         },
-        "not_operator_with_space": true,
+        "not_operator_with_space": false,
         "concat_space": {
             "spacing": "one"
         }
