@@ -23,6 +23,10 @@ jobs:
         run: |
           cp .env.example .env
           php artisan key:generate
+          mkdir -p database
+          touch database/database.sqlite
+          npm install
+          npm run build
 
       - name: Run Pint
         run: ./vendor/bin/pint
