@@ -1,0 +1,12 @@
+{
+    "preset": "psr12",
+    "rules": {
+        "binary_operator_spaces": {
+            "default": "single_space"
+        },
+        "not_operator_with_space": true,
+        "concat_space": {
+            "spacing": "one"
+        }
+    }
+}
