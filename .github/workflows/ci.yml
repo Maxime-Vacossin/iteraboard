@@ -21,7 +21,7 @@ jobs:
 
       - name: Prepare Laravel Application
         run: |
-          cp .env.exemple .env
+          cp .env.example .env
           php artisan key:generate
 
       - name: Run Pint
