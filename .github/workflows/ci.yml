@@ -1,27 +1,31 @@
-name: Laravel CI
+name: Run tests
 
-on:
-  pull_request:
-    branches: [ main, develop ]
+on: [push]
 
 jobs:
-  build:
+  tests:
+    name: Run tests
     runs-on: ubuntu-latest
-
     steps:
-      - uses: actions/checkout@v2
-      - name: Set up PHP
+      - uses: actions/checkout@v3
+
+      - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
-          php-version: '8.0'
-          extensions: mbstring, dom
-          tools: composer, phpunit
+          php-version: '8.2'
+          extensions: dom, curl, libxml, mbstring, zip, pcntl, pdo, sqlite, pdo_sqlite, bcmath, soap, intl, gd, exif, iconv
+          coverage: none
 
-      - name: Install Dependencies
-        run: composer install --prefer-dist --no-interaction
+      - name: Run composer install
+        run: composer install -n --prefer-dist
+
+      - name: Prepare Laravel Application
+        run: |
+          cp .env.ci .env
+          php artisan key:generate
 
       - name: Run Pint
         run: ./vendor/bin/pint
 
-      - name: Run Tests
+      - name: Run tests
         run: php artisan test
