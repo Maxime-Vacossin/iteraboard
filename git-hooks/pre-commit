@@ -1,0 +1,7 @@
+#!/bin/sh
+
+# Arrêter le commit si pint échoue
+./vendor/bin/pint || exit 1
+
+# Continue le processus de commit si pint réussit
+exit 0
