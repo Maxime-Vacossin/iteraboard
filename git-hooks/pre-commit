@@ -1,5 +1,16 @@
 #!/bin/bash
 
+txtred='\033[0;31m' # Red
+txtmag='\033[0;35m' # Magenta
+txtgrn='\033[0;32m' # Green
+txtylw='\033[0;33m' # Yellow
+bldred='\033[1;31m' # Red
+bakred='\033[41m'   # Red
+bakgrn='\033[42m'   # Green
+bakylw='\033[43m'   # Yellow
+bakylwtxtred='\033[43;41m'   # Yellow background, red text
+txtrst='\033[0m'    # Text Reset
+
 # Allows us to read user input below, assigns stdin to keyboard
 exec < /dev/tty
 
@@ -38,12 +49,12 @@ fi
 
 PASS=true
 
-echo -e "\e[92m Validating Pint... \e[0m"
+echo -e "\e[92m Validating Pint... ${txtrst}"
 
 # Check for phpcs
 which ./vendor/bin/pint &> /dev/null
 if [[ "$?" == 1 ]]; then
-  echo -e "\e[31mPlease install Pint (composer require laravel/pint --dev)\e[0m"
+  echo -e "\e[31mPlease install Pint (composer require laravel/pint --dev)${txtrst}"
   exit 1
 fi
 
@@ -55,9 +66,9 @@ do
   ./vendor/bin/pint --test --config $RULESET "$FILE"
 
   if [[ "$?" == 0 ]]; then
-    echo -e "\e[102m Pint Succeeded \e[0m \e[92m$FILE\e[0m"
+    echo -e "${bldgrn} Pint Succeeded ${txtrst} \e[92m$FILE${txtrst}"
   else
-    echo -e "\e[101m Pint Failed \e[0m \e[91m$FILE\e[0m"
+    echo -e "${bldred} Pint Failed ${txtrst} ${txtylw}$FILE${txtrst}"
     ERROR_FILES+=(${FILE})
     PASS=false
   fi
@@ -66,16 +77,16 @@ done
 echo ""
 
 if ! $PASS; then
-  echo -e "\e[101m Commit Failed \e[0m \e[91mYour commit contains files that should pass Pint but do not. Please fix the Pint errors and try again.\e[0m"
+  echo -e "${bldred} Commit Failed ${txtrst} ${txtylw}Your commit contains files that should pass Pint but do not. Please fix the Pint errors and try again.${txtrst}"
   echo ""
-  echo -e "\e[101m Files to correct \e[0m"
+  echo -e "${bldred} Files to correct ${txtrst}"
   for FILE in "${ERROR_FILES[@]}"
     do
-      echo -e "\e[91m$FILE\e[0m"
+      echo -e "${txtylw}$FILE${txtrst}"
     done
 
   while true; do
-    read -p "$(echo -e "\e[36mWould you like to attempt to correct files automagically ? (Y/n)\e[0m")" yn
+    read -p "$(echo -e "${bakylwtxtred} Would you like to attempt to correct files automagically ? (Y/n)${txtrst}")" yn
     if [ "$yn" = "" ]; then
       yn='Y'
     fi
@@ -88,8 +99,8 @@ if ! $PASS; then
 
   exit 1
 else
-  echo -e "\e[102m Commit Succeeded \e[0m \e[92m$FILE\e[0m"
-  echo -e "\e[102mYou rocks buddy !\e[0m"
+  echo -e "${bldgrn} Commit Succeeded ${txtrst} \e[92m$FILE${txtrst}"
+  echo -e "${bldgrn} You rocks buddy !${txtrst}"
 fi
 
 exit $?
