@@ -52,7 +52,7 @@ PASS=true
 echo -e "${txtmag} Validating Pint... ${txtrst}"
 
 # Check for phpcs
-which bash ./vendor/bin/sail php ./vendor/bin/pint &> /dev/null
+which ./vendor/bin/pint &> /dev/null
 if [[ "$?" == 1 ]]; then
   echo -e "${bkred}Please install Pint (composer require laravel/pint --dev)${txtrst}"
   exit 1
