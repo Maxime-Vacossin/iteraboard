@@ -1,0 +1,106 @@
+#!/bin/bash
+
+txtred='\033[0;31m' # Red
+txtmag='\033[0;35m' # Magenta
+txtgrn='\033[0;32m' # Green
+txtylw='\033[0;33m' # Yellow
+bldred='\033[1;31m' # Red
+bakred='\033[41m'   # Red
+bakgrn='\033[42m'   # Green
+bakylw='\033[43m'   # Yellow
+bakylwtxtred='\033[43;41m'   # Yellow background, red text
+txtrst='\033[0m'    # Text Reset
+
+# Allows us to read user input below, assigns stdin to keyboard
+exec < /dev/tty
+
+POSITIONAL_ARGS=()
+
+while [[ $# -gt 0 ]]; do
+  case $1 in
+    -n|--no-verify)
+      exit 1
+      ;;
+    *)
+      POSITIONAL_ARGS+=("$1") # save positional arg
+      shift # past argument
+      ;;
+  esac
+done
+
+set -- "${POSITIONAL_ARGS[@]}" # restore positional parameters
+
+STAGED_FILES=$(git diff --cached --name-only --diff-filter=ACM | grep ".php\{0,1\}$")
+
+ERROR_FILES=();
+
+# Disable if it's a merge
+git merge HEAD &> /dev/null
+IS_MERGE_PROCESS=$?
+if [ $IS_MERGE_PROCESS -ne 0 ]
+then
+  exit $?
+fi
+
+# Don't do anything if no staged files
+if [[ "$STAGED_FILES" = "" ]]; then
+  exit 0
+fi
+
+PASS=true
+
+echo -e "${txtmag} Validating Pint... ${txtrst}"
+
+# Check for phpcs
+which ./vendor/bin/pint &> /dev/null
+if [[ "$?" == 1 ]]; then
+  echo -e "${bkred}Please install Pint (composer require laravel/pint --dev)${txtrst}"
+  exit 1
+fi
+
+RULESET=./pint.json
+
+# Pint every staged files
+for FILE in $STAGED_FILES
+do
+  bash ./vendor/bin/sail php ./vendor/bin/pint --test --config $RULESET "$FILE"
+
+  if [[ "$?" == 0 ]]; then
+    echo -e "${bldgrn} Pint Succeeded ${txtrst} ${txtmag}$FILE${txtrst}"
+  else
+    echo -e "${bldred} Pint Failed ${txtrst} ${txtylw}$FILE${txtrst}"
+    ERROR_FILES+=(${FILE})
+    PASS=false
+  fi
+done
+
+echo ""
+
+if ! $PASS; then
+  echo -e "${bldred} Commit Failed ${txtrst} ${txtylw}Your commit contains files that should pass Pint but do not. Please fix the Pint errors and try again.${txtrst}"
+  echo ""
+  echo -e "${bldred} Files to correct ${txtrst}"
+  for FILE in "${ERROR_FILES[@]}"
+    do
+      echo -e "${txtylw}$FILE${txtrst}"
+    done
+
+  while true; do
+    read -p "$(echo -e "${bakylwtxtred} Would you like to attempt to correct files automagically ? (Y/n)${txtrst}")" yn
+    if [ "$yn" = "" ]; then
+      yn='Y'
+    fi
+    case $yn in
+      [Yy] ) bash ./vendor/bin/sail php ./vendor/bin/pint --config $RULESET "${ERROR_FILES[@]}" && git add "${ERROR_FILES[@]}"; exit;;
+      [Nn] ) exit 1;;
+      * ) exit 1;;
+    esac
+  done
+
+  exit 1
+else
+  echo -e "${bldgrn} Commit Succeeded ${txtrst} ${txtmag}$FILE${txtrst}"
+  echo -e "${bldgrn} You rocks buddy !${txtrst}"
+fi
+
+exit $?
