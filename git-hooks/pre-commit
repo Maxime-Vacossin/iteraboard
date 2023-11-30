@@ -52,18 +52,18 @@ PASS=true
 echo -e "${txtmag} Validating Pint... ${txtrst}"
 
 # Check for phpcs
-which ./vendor/bin/pint &> /dev/null
-if [[ "$?" == 1 ]]; then
-  echo -e "${bkred}Please install Pint (composer require laravel/pint --dev)${txtrst}"
-  exit 1
-fi
+#which bash ./vendor/bin/sail php ./vendor/bin/pint &> /dev/null
+#if [[ "$?" == 1 ]]; then
+#  echo -e "${bkred}Please install Pint (composer require laravel/pint --dev)${txtrst}"
+#  exit 1
+#fi
 
 RULESET=./pint.json
 
 # Pint every staged files
 for FILE in $STAGED_FILES
 do
-  ./vendor/bin/pint --test --config $RULESET "$FILE"
+  bash ./vendor/bin/sail php ./vendor/bin/pint --test --config $RULESET "$FILE"
 
   if [[ "$?" == 0 ]]; then
     echo -e "${bldgrn} Pint Succeeded ${txtrst} ${txtmag}$FILE${txtrst}"
@@ -91,7 +91,7 @@ if ! $PASS; then
       yn='Y'
     fi
     case $yn in
-      [Yy] ) ./vendor/bin/pint --config $RULESET "${ERROR_FILES[@]}" && git add "${ERROR_FILES[@]}"; exit;;
+      [Yy] ) bash ./vendor/bin/sail php ./vendor/bin/pint --config $RULESET "${ERROR_FILES[@]}" && git add "${ERROR_FILES[@]}"; exit;;
       [Nn] ) exit 1;;
       * ) exit 1;;
     esac
